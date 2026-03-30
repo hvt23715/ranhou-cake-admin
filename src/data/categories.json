@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "生日蛋糕",
+    "icon": "cake",
+    "todaySales": 56800,
+    "todayOrders": 156,
+    "trend": 12.5,
+    "color": "#e1584e"
+  },
+  {
+    "id": 2,
+    "name": "面包",
+    "icon": "bread",
+    "todaySales": 32400,
+    "todayOrders": 428,
+    "trend": 8.3,
+    "color": "#ff9c37"
+  },
+  {
+    "id": 3,
+    "name": "甜点",
+    "icon": "dessert",
+    "todaySales": 28600,
+    "todayOrders": 312,
+    "trend": -2.1,
+    "color": "#f06307"
+  },
+  {
+    "id": 4,
+    "name": "饮品",
+    "icon": "drink",
+    "todaySales": 19200,
+    "todayOrders": 256,
+    "trend": 15.7,
+    "color": "#cd3f38"
+  },
+  {
+    "id": 5,
+    "name": "节日礼盒",
+    "icon": "gift",
+    "todaySales": 45800,
+    "todayOrders": 98,
+    "trend": 45.2,
+    "color": "#ab312e"
+  }
+]

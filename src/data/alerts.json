@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "type": "inventory",
+    "level": "warning",
+    "title": "库存预警",
+    "message": "重庆路旗舰店 草莓慕斯蛋糕 库存不足，仅剩5份",
+    "store": "重庆路旗舰店",
+    "time": "10:23",
+    "status": "unread"
+  },
+  {
+    "id": 2,
+    "type": "violation",
+    "level": "error",
+    "title": "违规检测",
+    "message": "红旗街店 检测到员工未佩戴工作帽",
+    "store": "红旗街店",
+    "time": "09:45",
+    "status": "unread"
+  },
+  {
+    "id": 3,
+    "type": "sales",
+    "level": "info",
+    "title": "销售异常",
+    "message": "欧亚卖场店 今日销售额较昨日下降15%",
+    "store": "欧亚卖场店",
+    "time": "09:12",
+    "status": "read"
+  },
+  {
+    "id": 4,
+    "type": "equipment",
+    "level": "warning",
+    "title": "设备告警",
+    "message": "净月大学城店 2号冷藏柜温度异常，当前温度8℃",
+    "store": "净月大学城店",
+    "time": "08:56",
+    "status": "unread"
+  },
+  {
+    "id": 5,
+    "type": "violation",
+    "level": "error",
+    "title": "违规检测",
+    "message": "高新活力城店 检测到操作间卫生不达标",
+    "store": "高新活力城店",
+    "time": "08:30",
+    "status": "unread"
+  },
+  {
+    "id": 6,
+    "type": "inventory",
+    "level": "info",
+    "title": "库存提醒",
+    "message": "南关新天地店 提拉米苏原料即将过期，请优先使用",
+    "store": "南关新天地店",
+    "time": "08:15",
+    "status": "read"
+  },
+  {
+    "id": 7,
+    "type": "sales",
+    "level": "success",
+    "title": "销售突破",
+    "message": "宽城万达店 今日销售额已突破15000元",
+    "store": "宽城万达店",
+    "time": "07:50",
+    "status": "read"
+  }
+]
