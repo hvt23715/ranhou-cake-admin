@@ -1,0 +1,12 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-03-31T08:22:10.633Z
+provider: 
+---
+
+- 摸鱼模拟器项目采用了微信小程序原生开发，结合云开发（CloudBase）实现事件生成逻辑。视觉风格定位于“职场漫画风”，核心玩法是平衡摸鱼时长、老板怒气和同事信任。云函数 getEvents 预留了 AI 接口并目前返回 Mock 数据。 (ID: 75902429)
+- 燃厚蛋糕管理后台采用 React + Vite + TailwindCSS 架构，使用 ECharts 进行数据可视化，高德地图进行门店分布展示。
+- 首页 (Dashboard) 包含 AI 助手、地图散点图分布和摄像头监控缩略图。
+- 门店地图页面支持销量/客流热力图切换功能。
