@@ -5,10 +5,17 @@ import { useAppStore } from '@/store/appStore'
 import { cn } from '@/lib/utils'
 
 export function MainLayout() {
-  const { sidebarOpen } = useAppStore()
+  const { sidebarOpen, setSidebarOpen } = useAppStore()
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       <Sidebar />
       <div
         className={cn(

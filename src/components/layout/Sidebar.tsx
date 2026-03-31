@@ -26,11 +26,18 @@ const bottomMenuItems = [
 export function Sidebar() {
   const { sidebarOpen, setSidebarOpen } = useAppStore()
 
+  const handleNavLinkClick = () => {
+    // On mobile, close sidebar when a link is clicked
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false)
+    }
+  }
+
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-50 h-screen bg-white border-r border-gray-200 transition-all duration-300 lg:translate-x-0',
-        sidebarOpen ? 'w-64' : 'w-20'
+        'fixed left-0 top-0 z-50 h-screen bg-white border-r border-gray-200 transition-all duration-300',
+        sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20 w-64'
       )}
     >
       <div className="flex flex-col h-full">
@@ -66,6 +73,7 @@ export function Sidebar() {
               <li key={item.path}>
                 <NavLink
                   to={item.path}
+                  onClick={handleNavLinkClick}
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200',
@@ -96,6 +104,7 @@ export function Sidebar() {
               <li key={item.path}>
                 <NavLink
                   to={item.path}
+                  onClick={handleNavLinkClick}
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200',

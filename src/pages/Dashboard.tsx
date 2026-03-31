@@ -4,6 +4,9 @@ import { SalesTrendChart } from '@/components/dashboard/SalesTrendChart'
 import { CategoryChart } from '@/components/dashboard/CategoryChart'
 import { StoreRanking } from '@/components/dashboard/StoreRanking'
 import { AlertList } from '@/components/dashboard/AlertList'
+import { DashboardAIChat } from '@/components/dashboard/DashboardAIChat'
+import { DashboardMapPreview } from '@/components/dashboard/DashboardMapPreview'
+import { DashboardCameraPreview } from '@/components/dashboard/DashboardCameraPreview'
 import storesData from '@/data/stores.json'
 import salesTrendData from '@/data/salesTrend.json'
 
@@ -61,7 +64,19 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="h-[320px]">
+          <DashboardAIChat />
+        </div>
+        <div className="h-[320px]">
+          <DashboardMapPreview />
+        </div>
+        <div className="h-[320px]">
+          <DashboardCameraPreview />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         <div className="lg:col-span-2">
           <SalesTrendChart />
         </div>

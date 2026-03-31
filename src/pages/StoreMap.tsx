@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapPin, Phone, Clock, User, X, Navigation } from 'lucide-react'
+import { MapPin, Phone, Clock, User, X, Navigation, TrendingUp, Users } from 'lucide-react'
 import storesData from '@/data/stores.json'
 import { formatCurrency } from '@/lib/utils'
 
@@ -23,29 +23,43 @@ interface Store {
   openTime: string
 }
 
+type HeatmapType = 'sales' | 'customers'
+
 export default function StoreMap() {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
+  const heatmapRef = useRef<any>(null)
   const [selectedStore, setSelectedStore] = useState<Store | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapError, setMapError] = useState(false)
+  const [heatmapType, setHeatmapType] = useState<HeatmapType>('sales')
+  const [heatmapVisible, setHeatmapVisible] = useState(true)
 
   useEffect(() => {
-    const initMap = () => {
+    const initMap = async () => {
       if (!window.AMap || !mapContainerRef.current) {
         setMapError(true)
         return
       }
 
       try {
+        // 先确保插件加载完成
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Plugin loading timeout')), 5000)
+          window.AMap.plugin(['AMap.HeatMap'], () => {
+            clearTimeout(timeout)
+            resolve()
+          })
+        })
+
         const map = new window.AMap.Map(mapContainerRef.current, {
           zoom: 11,
           center: [125.3238, 43.8965],
           viewMode: '2D',
         })
-
         mapRef.current = map
 
+        // 使用已保存的经纬度数据直接添加标记
         storesData.forEach((store) => {
           const marker = new window.AMap.Marker({
             position: [store.longitude, store.latitude],
@@ -56,16 +70,35 @@ export default function StoreMap() {
             },
           })
 
-          marker.on('click', () => {
-            setSelectedStore(store)
-          })
-
+          marker.on('click', () => setSelectedStore(store as Store))
           marker.setMap(map)
         })
 
+        // 初始化热力图
+        const heatmap = new window.AMap.HeatMap(map, {
+          radius: 35,
+          opacity: [0, 0.8],
+          zIndex: 100,
+        })
+        heatmapRef.current = heatmap
+        
+        const heatmapData = storesData.map((store) => ({
+          lng: store.longitude,
+          lat: store.latitude,
+          count: heatmapType === 'sales' ? store.todaySales : store.todayCustomers,
+        }))
+
+        heatmap.setDataSet({
+          data: heatmapData,
+          max: Math.max(...heatmapData.map(d => d.count)) || 100,
+        })
+
+        if (heatmapVisible) heatmap.show()
+        else heatmap.hide()
+
         setMapLoaded(true)
       } catch (error) {
-        console.error('Map initialization error:', error)
+        console.error('Map initialization detailed error:', error)
         setMapError(true)
       }
     }
@@ -82,9 +115,7 @@ export default function StoreMap() {
 
       setTimeout(() => {
         clearInterval(checkAMap)
-        if (!window.AMap) {
-          setMapError(true)
-        }
+        if (!window.AMap) setMapError(true)
       }, 10000)
     }
 
@@ -94,6 +125,35 @@ export default function StoreMap() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (heatmapRef.current && heatmapVisible && mapLoaded) {
+      const data = storesData.map((store) => ({
+        lng: store.longitude,
+        lat: store.latitude,
+        count: heatmapType === 'sales' ? store.todaySales : store.todayCustomers,
+      }))
+
+      const maxCount = heatmapType === 'sales'
+        ? Math.max(...storesData.map((s) => s.todaySales))
+        : Math.max(...storesData.map((s) => s.todayCustomers))
+
+      heatmapRef.current.setDataSet({
+        data,
+        max: maxCount,
+      })
+    }
+  }, [heatmapType, heatmapVisible, mapLoaded])
+
+  useEffect(() => {
+    if (heatmapRef.current) {
+      if (heatmapVisible) {
+        heatmapRef.current.show()
+      } else {
+        heatmapRef.current.hide()
+      }
+    }
+  }, [heatmapVisible])
 
   const handleStoreClick = (store: Store) => {
     setSelectedStore(store)
@@ -122,6 +182,61 @@ export default function StoreMap() {
                 <div className="text-center">
                   <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                   <p className="text-gray-600">地图加载中...</p>
+                </div>
+              </div>
+            )}
+
+            {mapLoaded && (
+              <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-1">
+                  <button
+                    onClick={() => setHeatmapVisible(!heatmapVisible)}
+                    className={`w-full px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                      heatmapVisible
+                        ? 'bg-primary-50 text-primary-700'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    热力图
+                  </button>
+                </div>
+
+                {heatmapVisible && (
+                  <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-1">
+                    <button
+                      onClick={() => setHeatmapType('sales')}
+                      className={`w-full px-3 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors ${
+                        heatmapType === 'sales'
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                      销量热力
+                    </button>
+                    <button
+                      onClick={() => setHeatmapType('customers')}
+                      className={`w-full px-3 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors mt-1 ${
+                        heatmapType === 'customers'
+                          ? 'bg-orange-50 text-orange-700'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Users className="w-4 h-4" />
+                      客流热力
+                    </button>
+                  </div>
+                )}
+
+                <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
+                  <div className="text-xs text-gray-500 mb-2">热力图例</div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 h-3 rounded bg-gradient-to-r from-green-400 via-yellow-400 to-red-500" />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>低</span>
+                    <span>高</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -198,7 +313,7 @@ export default function StoreMap() {
           {storesData.map((store) => (
             <button
               key={store.id}
-              onClick={() => handleStoreClick(store)}
+              onClick={() => handleStoreClick(store as Store)}
               className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                 selectedStore?.id === store.id ? 'bg-primary-50' : ''
               }`}

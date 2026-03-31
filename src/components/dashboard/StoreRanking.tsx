@@ -9,9 +9,9 @@ export function StoreRanking() {
   const maxSales = sortedStores[0]?.todaySales || 1
 
   return (
-    <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">门店销量排行</h3>
-      <div className="space-y-4">
+    <div className="card h-full flex flex-col">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex-shrink-0">门店销量排行</h3>
+      <div className="flex-1 overflow-y-auto space-y-4 pr-1">
         {sortedStores.map((store, index) => (
           <div key={store.id} className="flex items-center gap-4">
             <div

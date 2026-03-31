@@ -1,7 +1,13 @@
+import { useEffect, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
 import categoriesData from '@/data/categories.json'
 
 export function CategoryChart() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -65,7 +71,7 @@ export function CategoryChart() {
   return (
     <div className="card">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">品类销量</h3>
-      <ReactECharts option={option} style={{ height: '280px' }} />
+      {mounted && <ReactECharts option={option} style={{ height: '280px' }} />}
     </div>
   )
 }

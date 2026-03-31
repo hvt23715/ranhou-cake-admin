@@ -1,7 +1,13 @@
+import { useEffect, useState } from 'react'
 import ReactECharts from 'echarts-for-react'
 import salesTrendData from '@/data/salesTrend.json'
 
 export function SalesTrendChart() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -119,9 +125,11 @@ export function SalesTrendChart() {
   }
 
   return (
-    <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">销量趋势</h3>
-      <ReactECharts option={option} style={{ height: '320px' }} />
+    <div className="card h-full flex flex-col">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex-shrink-0">销量趋势</h3>
+      <div className="flex-1 min-h-0">
+        {mounted && <ReactECharts option={option} style={{ height: '100%', minHeight: '320px' }} />}
+      </div>
     </div>
   )
 }
