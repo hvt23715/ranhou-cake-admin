@@ -32,7 +32,7 @@ export function DashboardCameraPreview() {
       </div>
 
       <div className="flex-1 grid grid-cols-3 gap-2 min-h-[140px]">
-        {previewStores.map((store, index) => (
+        {previewStores.map((store) => (
           <div
             key={store.id}
             className="relative bg-gray-900 rounded-lg overflow-hidden group cursor-pointer"
