@@ -1,93 +1,101 @@
-import { useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, ArrowRight, Store } from 'lucide-react'
-import ReactECharts from 'echarts-for-react'
+import { MapPin, ArrowRight, Store, Loader2, TrendingUp } from 'lucide-react'
 import storesData from '@/data/stores.json'
-import { formatCurrency } from '@/lib/utils'
 
 export function DashboardMapPreview() {
   const navigate = useNavigate()
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<any>(null)
+  const heatmapRef = useRef<any>(null)
+  const [mapLoaded, setMapLoaded] = useState(false)
 
-  const scatterData = useMemo(() => {
-    return storesData.map((store) => ({
-      name: store.name.replace('燃厚蛋糕 - ', ''),
-      value: [store.longitude, store.latitude, store.todaySales],
-      sales: store.todaySales,
-      customers: store.todayCustomers,
-    }))
-  }, [])
+  useEffect(() => {
+    const initMap = async () => {
+      if (!window.AMap || !mapContainerRef.current) return
 
-  const option = useMemo(() => {
-    const minSales = Math.min(...scatterData.map((d) => d.sales))
-    const maxSales = Math.max(...scatterData.map((d) => d.sales))
+      try {
+        // 先确保插件加载完成
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Plugin loading timeout')), 5000)
+          window.AMap.plugin(['AMap.HeatMap'], () => {
+            clearTimeout(timeout)
+            resolve()
+          })
+        })
 
-    return {
-      grid: {
-        left: '5%',
-        right: '5%',
-        top: '10%',
-        bottom: '10%',
-      },
-      xAxis: {
-        type: 'value',
-        min: 125.1,
-        max: 125.45,
-        show: false,
-      },
-      yAxis: {
-        type: 'value',
-        min: 43.75,
-        max: 44.0,
-        show: false,
-      },
-      tooltip: {
-        trigger: 'item',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        borderColor: '#e5e7eb',
-        borderWidth: 1,
-        textStyle: {
-          color: '#374151',
-          fontSize: 12,
-        },
-        formatter: (params: any) => {
-          return `
-            <div style="font-weight:600;margin-bottom:4px">${params.data.name}</div>
-            <div style="color:#6b7280">销售额: ${formatCurrency(params.data.sales)}</div>
-            <div style="color:#6b7280">客流: ${params.data.customers}人</div>
-          `
-        },
-      },
-      series: [
-        {
-          type: 'scatter',
-          symbolSize: (val: number[]) => {
-            const sales = val[2]
-            const size = 8 + ((sales - minSales) / (maxSales - minSales)) * 20
-            return Math.max(10, Math.min(30, size))
-          },
-          data: scatterData,
-          itemStyle: {
-            color: (params: any) => {
-              const sales = params.data.sales
-              const ratio = (sales - minSales) / (maxSales - minSales)
-              if (ratio > 0.7) return '#ef4444'
-              if (ratio > 0.4) return '#f59e0b'
-              return '#3b82f6'
-            },
-            shadowBlur: 10,
-            shadowColor: 'rgba(0, 0, 0, 0.1)',
-          },
-          emphasis: {
-            scale: 1.5,
-            itemStyle: {
-              shadowBlur: 20,
-              shadowColor: 'rgba(0, 0, 0, 0.2)',
-            },
-          },
-        },
-      ],
+        const map = new window.AMap.Map(mapContainerRef.current, {
+          zoom: 10,
+          center: [125.3238, 43.8965],
+          viewMode: '2D',
+          mapStyle: 'amap://styles/light',
+          dragEnable: false,
+          zoomEnable: false,
+          scrollWheel: false,
+          doubleClickZoom: false,
+          touchZoom: false,
+        })
+        mapRef.current = map
+
+        // 添加门店标记
+        storesData.forEach((store) => {
+          const marker = new window.AMap.Marker({
+            position: [store.longitude, store.latitude],
+            content: `<div class="w-1.5 h-1.5 bg-white rounded-full border border-gray-400 shadow-sm opacity-60"></div>`,
+            offset: new window.AMap.Pixel(-3, -3),
+          })
+          marker.setMap(map)
+        })
+
+        // 初始化热力图
+        const heatmap = new window.AMap.HeatMap(map, {
+          radius: 40,
+          opacity: [0, 0.7],
+          zIndex: 100,
+          gradient: {
+            0.4: 'rgb(51, 102, 255)',
+            0.6: 'rgb(102, 255, 153)',
+            0.8: 'rgb(255, 255, 102)',
+            1.0: 'rgb(255, 51, 51)',
+          }
+        })
+        heatmapRef.current = heatmap
+
+        const heatmapData = storesData.map((store) => ({
+          lng: store.longitude,
+          lat: store.latitude,
+          count: store.todaySales,
+        }))
+
+        heatmap.setDataSet({
+          data: heatmapData,
+          max: Math.max(...heatmapData.map(d => d.count)) || 100,
+        })
+
+        setMapLoaded(true)
+      } catch (error) {
+        console.error('Dashboard map init error:', error)
+      }
     }
-  }, [scatterData])
+
+    if (window.AMap) {
+      initMap()
+    } else {
+      const checkAMap = setInterval(() => {
+        if (window.AMap) {
+          clearInterval(checkAMap)
+          initMap()
+        }
+      }, 500)
+      return () => clearInterval(checkAMap)
+    }
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.destroy()
+      }
+    }
+  }, [])
 
   const topStore = useMemo(() => {
     return [...storesData].sort((a, b) => b.todaySales - a.todaySales)[0]
@@ -106,43 +114,57 @@ export function DashboardMapPreview() {
           onClick={() => navigate('/map')}
           className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 transition-colors"
         >
-          查看地图
+          查看全域地图
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="flex-1 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden relative min-h-[180px]">
-        <ReactECharts
-          option={option}
-          style={{ height: '100%', width: '100%' }}
-        />
-        <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-sm">
-          <div className="flex items-center gap-2 text-xs">
-            <Store className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-gray-600">共 {storesData.length} 家门店</span>
-            <span className="text-gray-300">|</span>
-            <span className="text-gray-600">
-              销量冠军: <span className="font-medium text-emerald-600">{topStore.name.replace('燃厚蛋糕 - ', '')}</span>
-            </span>
+      <div className="flex-1 rounded-lg overflow-hidden relative min-h-[180px] border border-gray-100 bg-gray-50">
+        {/* 高德地图容器 */}
+        <div ref={mapContainerRef} className="w-full h-full" />
+        
+        {!mapLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+            <div className="text-center">
+              <Loader2 className="w-6 h-6 text-emerald-500 animate-spin mx-auto mb-2" />
+              <p className="text-[10px] text-gray-400 font-medium">地图引擎加载中...</p>
+            </div>
+          </div>
+        )}
+
+        <div className="absolute top-2 right-2 z-10 pointer-events-none">
+          <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] text-emerald-600 rounded border border-emerald-100 shadow-sm font-semibold">
+            实时·长春
+          </span>
+        </div>
+        
+        <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-sm border border-gray-100 z-10">
+          <div className="flex items-center justify-between gap-2 text-[11px]">
+            <div className="flex items-center gap-1.5 truncate">
+              <Store className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+              <span className="text-gray-600">
+                销量冠军: <span className="font-bold text-gray-900">{topStore.name.replace('燃厚蛋糕 - ', '')}</span>
+              </span>
+            </div>
+            <div className="flex-shrink-0 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold">
+              共{storesData.length}家
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-xs">
+      <div className="mt-3 flex items-center justify-between text-[10px]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
-            <span className="text-gray-500">低销量</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-gray-500 font-medium">营业中</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span className="text-gray-500">中销量</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-gray-500">高销量</span>
+            <span className="w-2 h-2 rounded-full bg-gray-300" />
+            <span className="text-gray-500 font-medium">装修中</span>
           </div>
         </div>
+        <span className="text-gray-400 italic">基于高德地图实时渲染</span>
       </div>
     </div>
   )

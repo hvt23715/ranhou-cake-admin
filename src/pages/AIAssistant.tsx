@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Sparkles, TrendingUp, MapPin, AlertCircle, BookOpen } from 'lucide-react'
-import { cn, generateAIResponse } from '@/lib/utils'
+import { Send, Sparkles, TrendingUp, MapPin, AlertCircle, BookOpen, Search, PieChart, ShieldCheck } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { fetchAIResponse, fetchAIResponseStream } from '@/lib/ai'
+import { MarkdownRenderer } from '@/components/common/MarkdownRenderer'
 
 interface Message {
   id: string
@@ -11,29 +13,24 @@ interface Message {
 
 const suggestedQuestions = [
   {
-    category: '数据查询',
+    category: '业绩分析',
     icon: TrendingUp,
-    questions: ['今日销售额是多少？', '哪个门店销量最好？', '各品类销售情况如何？'],
+    questions: ['分析今日整体客单价表现', '哪个单品今日贡献额最高？', '销售冠军门店的成功逻辑是什么？'],
   },
   {
-    category: '运营建议',
+    category: '智能运营',
     icon: Sparkles,
-    questions: ['如何提高客单价？', '明天应该备多少货？', '如何提升门店业绩？'],
+    questions: ['如何针对目前的客单价提高连带率？', '根据今日单品销量给出的补货建议', '分析品类销售占比并建议明天的排产'],
   },
   {
-    category: '行业知识',
-    icon: BookOpen,
-    questions: ['烘焙行业趋势如何？', '什么蛋糕最受欢迎？', '如何制作提拉米苏？'],
+    category: '风险预警',
+    icon: ShieldCheck,
+    questions: ['列出今日最紧急的未处理预警', '分析净月大学城店目前的运行状态', '总结目前的库存缺货情况'],
   },
   {
-    category: '违规检测',
-    icon: AlertCircle,
-    questions: ['有哪些违规预警？', '查看摄像头监控', '操作间卫生情况'],
-  },
-  {
-    category: '地理洞察',
-    icon: MapPin,
-    questions: ['附近有哪些门店？', '门店分布情况', '哪个区域销量最好？'],
+    category: '行业探索',
+    icon: Search,
+    questions: ['对比我们目前爆款单品与行业趋势', '搜索2024年流行蛋糕口味', '如何利用现有数据优化会员复购？'],
   },
 ]
 
@@ -42,7 +39,7 @@ export default function AIAssistant() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: '您好！我是燃厚蛋糕AI助手 🤖\n\n我可以帮您查询数据、分析业绩、提供运营建议。请问有什么可以帮您的？',
+      content: '👋 您好！我是“燃厚蛋糕”的首席经营分析师。我已经接入了 DeepSeek 联网搜索能力，不仅能帮您实时监控 18 家门店的经营状况，还能为您提供全球烘焙行业的最新资讯和专业运营建议。\n\n您可以询问我关于**销售数据、库存分析、违规预警**或**行业趋势**的任何问题。请问有什么可以帮您的？',
       timestamp: new Date(),
     },
   ])
@@ -59,7 +56,7 @@ export default function AIAssistant() {
   }, [messages])
 
   const handleSend = async (content: string) => {
-    if (!content.trim()) return
+    if (!content.trim() || isLoading) return
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -72,17 +69,40 @@ export default function AIAssistant() {
     setInput('')
     setIsLoading(true)
 
-    setTimeout(() => {
-      const response = generateAIResponse(content)
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: response,
-        timestamp: new Date(),
+    const assistantMessageId = (Date.now() + 1).toString()
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    }
+    
+    setMessages((prev) => [...prev, assistantMessage])
+
+    try {
+      let fullContent = ''
+      for await (const chunk of fetchAIResponseStream(content)) {
+        fullContent += chunk
+        setMessages((prev) => 
+          prev.map((msg) => 
+            msg.id === assistantMessageId 
+              ? { ...msg, content: fullContent } 
+              : msg
+          )
+        )
       }
-      setMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error('AI Stream Error:', error)
+      setMessages((prev) => 
+        prev.map((msg) => 
+          msg.id === assistantMessageId 
+            ? { ...msg, content: '抱歉，我现在处理信息时遇到了点困难，请稍后再试。' } 
+            : msg
+        )
+      )
+    } finally {
       setIsLoading(false)
-    }, 800)
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -121,8 +141,18 @@ export default function AIAssistant() {
                       : 'bg-gray-100 text-gray-900'
                   )}
                 >
-                  <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                  <span className="text-xs opacity-60 mt-1 block">
+                  <div className="text-sm leading-relaxed">
+                    {message.content ? (
+                      <MarkdownRenderer content={message.content} isUser={message.role === 'user'} />
+                    ) : (isLoading && message.role === 'assistant' && message.id === messages[messages.length - 1].id ? (
+                      <div className="flex gap-1 py-1">
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    ) : null)}
+                  </div>
+                  <span className="text-[10px] opacity-40 mt-1.5 block text-right">
                     {message.timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -133,20 +163,6 @@ export default function AIAssistant() {
                 )}
               </div>
             ))}
-            {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-4 h-4 text-primary-600" />
-                </div>
-                <div className="bg-gray-100 rounded-2xl px-4 py-3">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
 

@@ -26,6 +26,7 @@ export function formatPercent(value: number): string {
 }
 
 export function generateAIResponse(question: string): string {
+  // 原有的 Mock 逻辑保持不变作为降级处理，或者由外部调用 fetchAIResponse
   const q = question.toLowerCase()
 
   if (q.includes('销售额') || q.includes('收入') || q.includes('业绩')) {

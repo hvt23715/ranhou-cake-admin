@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "草莓雪域慕斯",
+    "category": "生日蛋糕",
+    "price": 198,
+    "todaySales": 12,
+    "stock": 5,
+    "trend": "up"
+  },
+  {
+    "id": 2,
+    "name": "经典黑森林",
+    "category": "生日蛋糕",
+    "price": 168,
+    "todaySales": 8,
+    "stock": 10,
+    "trend": "stable"
+  },
+  {
+    "id": 3,
+    "name": "海盐芝士流心",
+    "category": "甜点",
+    "price": 38,
+    "todaySales": 45,
+    "stock": 12,
+    "trend": "up"
+  },
+  {
+    "id": 4,
+    "name": "法式牛角包",
+    "category": "面包",
+    "price": 15,
+    "todaySales": 86,
+    "stock": 20,
+    "trend": "down"
+  },
+  {
+    "id": 5,
+    "name": "杨枝甘露",
+    "category": "饮品",
+    "price": 22,
+    "todaySales": 120,
+    "stock": 50,
+    "trend": "up"
+  },
+  {
+    "id": 6,
+    "name": "提拉米苏杯",
+    "category": "甜点",
+    "price": 32,
+    "todaySales": 35,
+    "stock": 0,
+    "trend": "up"
+  },
+  {
+    "id": 7,
+    "name": "全麦核桃欧包",
+    "category": "面包",
+    "price": 18,
+    "todaySales": 42,
+    "stock": 15,
+    "trend": "stable"
+  },
+  {
+    "id": 8,
+    "name": "瑞幸联名礼盒",
+    "category": "节日礼盒",
+    "price": 298,
+    "todaySales": 5,
+    "stock": 25,
+    "trend": "up"
+  }
+]

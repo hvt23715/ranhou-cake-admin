@@ -118,11 +118,15 @@ export default function CameraMonitor() {
         <div className="lg:col-span-2 space-y-4">
           <div className="card p-0 overflow-hidden">
             <div className="aspect-video bg-gray-900 relative">
-              <div className="absolute inset-0 flex items-center justify-center">
+              <img 
+                src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=1200&auto=format&fit=crop" 
+                className="absolute inset-0 w-full h-full object-cover opacity-70 grayscale-[0.2]"
+                alt="Main kitchen monitor"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10">
                 <div className="text-center">
-                  <Video className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-500">监控视频区域</p>
-                  <p className="text-sm text-gray-600 mt-2">{selectedStore.name} - 操作间</p>
+                  <Video className="w-16 h-16 text-white/30 mx-auto mb-4" />
+                  <p className="text-white/60 font-medium">主控画面: {selectedStore.name} - 操作间</p>
                 </div>
               </div>
 
@@ -147,10 +151,15 @@ export default function CameraMonitor() {
           <div className="grid grid-cols-2 gap-4">
             <div className="card p-0 overflow-hidden">
               <div className="aspect-video bg-gray-800 relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1517433670267-08bbd4be890f?q=80&w=800&auto=format&fit=crop" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-40"
+                  alt="Counter monitor"
+                />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <Video className="w-10 h-10 text-gray-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">收银台</p>
+                    <Video className="w-10 h-10 text-white/20 mx-auto mb-2" />
+                    <p className="text-sm text-white/60">收银台</p>
                   </div>
                 </div>
                 <div className="absolute top-2 left-2">
@@ -164,10 +173,15 @@ export default function CameraMonitor() {
 
             <div className="card p-0 overflow-hidden">
               <div className="aspect-video bg-gray-800 relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=800&auto=format&fit=crop" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-40"
+                  alt="Display monitor"
+                />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <Video className="w-10 h-10 text-gray-600 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">展示区</p>
+                    <Video className="w-10 h-10 text-white/20 mx-auto mb-2" />
+                    <p className="text-sm text-white/60">展示区</p>
                   </div>
                 </div>
                 <div className="absolute top-2 left-2">
